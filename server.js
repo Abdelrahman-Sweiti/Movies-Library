@@ -4,14 +4,19 @@ const app = express();
 const jsonData = require('./MovieData/data.json');
 
 app.get('/', (req, res) => {
-    const formattedData = jsonData.map(movie => ({
-        title: movie.Title,
-        poster_path: movie.poster_path,
-        overview: movie.overview
-    }));
+    let  movie = new Movie(jsonData.title,jsonData.poster_path,jsonData.overview)
 
-    res.json(formattedData);
-});
+    res.json(movie)
+})
+
+
+function Movie(title,poster_path,overview){
+
+this.title=title;
+this.poster_path=poster_path;
+this.overview=overview;
+
+};
 
 app.get('/favorite', (req, res) => {
     res.send('Welcome to Favorite Page');
