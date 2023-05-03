@@ -1,13 +1,94 @@
 const express = require('express');
-const app = express();
+const cors = require('cors');
+const server = express();
+require('dotenv').config();
+
+server.use(cors())   // Middleware function 
+const axios = require('axios');
+const apiKey = process.env.apiKey;
+
+server.get('/trending', trending)
+
+server.get('/search', search)
+
 
 const jsonData = require('./MovieData/data.json');
 
-app.get('/', (req, res) => {
+server.get('/', (req, res) => {
     let  movie = new Movie(jsonData.title,jsonData.poster_path,jsonData.overview)
 
     res.json(movie)
 })
+
+
+async function trending(req, res) {
+    const url = `https://api.themoviedb.org/3/trending/movie/day?api_key=${apiKey}`;
+  
+    axios.get(url)
+      .then(response => {
+        const movieResults = response.data.results;
+  
+        const mapResult = movieResults.map(item => {
+          const movieData = {
+            id: item.id,
+            title: item.title,
+            release_date: item.release_date,
+            overview: item.overview
+          };
+          return movieData;
+        });
+  
+        res.send(mapResult);
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).send("Error retrieving trending movies.");
+      });
+  }
+  
+
+  async function search(req, res) {
+    const searchTerm = req.query.term;
+    const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${searchTerm}`;
+  
+    try {
+      const axiosResult = await axios.get(url);
+      const searchResults = axiosResult.data.results.map((item) => {
+        const movie = new Movie(item.title, item.poster_path, item.overview);
+        return movie;
+      });
+  
+      res.send(searchResults);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal server error");
+    }
+  }
+  
+  
+//      let axiosResult = await axios.get(url);
+//     console.log(axiosResult.jsonData.movie)
+//     res.send(axiosResult.jsonData.movie)
+
+//    let mapResult = axiosResult.jsonData.movie.map(item=>{
+//         let singleRecipe = new TrendingMovie(item.id,item.title,item.release_date,item.poster_path,item.overview);
+//         return singleRecipe;
+//     })
+//     res.send(mapResult)
+
+
+
+
+
+
+function TrendingMovie(id, title, release_date, poster_path,overview) {
+    this.id = id;
+    this.title = title;
+    this.release_date = release_date;
+    this.poster_path = poster_path;
+    this.overview=overview;
+}
+
 
 
 function Movie(title,poster_path,overview){
@@ -18,21 +99,20 @@ this.overview=overview;
 
 };
 
-app.get('/favorite', (req, res) => {
+server.get('/favorite', (req, res) => {
     res.send('Welcome to Favorite Page');
 });
 
-app.use((err, req, res, next) => {
+server.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Server Error');
 });
 
-app.use((req, res) => {
+server.use((req, res) => {
     res.status(404).send('Page Not Found');
 });
 
-
-const PORT = 3000;
-app.listen(PORT, () => {
+PORT=3000;
+server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });

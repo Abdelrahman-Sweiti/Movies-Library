@@ -11,3 +11,9 @@ first you make the repo add read me file and gitignore folder with node as templ
 
 ## Project Features
 it handles GET responses if the request is successful or not
+
+
+
+# Lab 14 WRRC
+
+![image of WRRC](WRRC2.png)
