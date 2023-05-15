@@ -5,7 +5,6 @@ server.use(cors())
 require('dotenv').config();
 const pg = require('pg');
 
-server.post('/Movies',addMovie);
 server.use(cors())   // Middleware function 
 const axios = require('axios');
 const apiKey = process.env.apiKey;
@@ -14,8 +13,10 @@ server.use(express.json());
 
 server.get('/trending', trending)
 server.get('/GetMovies', MoviesHandler)
+server.post('/addMovies',addMovie);
+server.delete('/Movies/:id',DeleteMovieHandler);
 server.get('/search', search)
-
+server.put('/Movies/:id',updateMovieHandler);
 
 const jsonData = require('./MovieData/data.json');
 
@@ -24,6 +25,43 @@ server.get('/', (req, res) => {
 
   res.json(movie)
 })
+
+
+
+function DeleteMovieHandler(req,res)
+{
+
+  const id = req.params.id;
+  const sql = `DELETE FROM Movies WHERE id=${id};`
+  client.query(sql)
+  .then((data)=>{
+      res.status(202).send(data)
+  })
+  .catch((error)=>{
+      errorHandler(error,req,res)
+  })
+
+}
+
+
+function updateMovieHandler(req,res){
+
+  const {id} = req.params;
+  console.log(req.body);
+  const sql = `UPDATE Movies
+  SET title = $1
+  WHERE id = ${id};`
+  const {title} = req.body;
+  const values = [title];
+  client.query(sql,values).then((data)=>{
+      res.send(data)
+  })
+  .catch((error)=>{
+      errorHandler(error,req,res)
+  })
+
+}
+
 
 
 async function trending(req, res) {
@@ -68,16 +106,20 @@ function MoviesHandler(req, res) {
 
 function addMovie(req,res){
 
-const movie = req.body;
-const sql = `INSERT INTO Movies (name,date)
-VALUES($1,$2,$3);`
-const values = [movie.name,movie.date];
-client.query(sql,values)
-.then(data => {
-res.send("data been recorded succesfully")
-
-})
+  const movie = req.body;
+  console.log(req.body);
+  const sql = `INSERT INTO Movies (title,release_date,poster_path,overview) VALUES ($1,$2,$3,$4)`;
+  const values = [movie.title, movie.release_date,movie.poster_path,movie.overview];
+  client.query(sql,values)
+  .then(data => {
+    res.send("data has been recorded successfully");
+  })
+  .catch(error => {
+    console.error(error);
+    res.status(500).send("Internal server error");
+  });
 }
+
 
 
 async function search(req, res) {
