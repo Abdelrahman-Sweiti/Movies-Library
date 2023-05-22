@@ -13,10 +13,10 @@ server.use(express.json());
 
 server.get('/trending', trending)
 server.get('/GetMovies', MoviesHandler)
-server.post('/addMovies',addMovie);
-server.delete('/Movies/:id',DeleteMovieHandler);
+server.post('/AddNewMovie',addMovie);
+server.delete('/Movies/delete/:id',DeleteMovieHandler);
 server.get('/search', search)
-server.put('/Movies/:id',updateMovieHandler);
+server.put('/Movies/update/:id',updateMovieHandler);
 
 const jsonData = require('./MovieData/data.json');
 
