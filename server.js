@@ -13,6 +13,8 @@ server.use(express.json());
 
 server.get('/trending', trending)
 server.get('/GetMovies', MoviesHandler)
+server.get('/genre', genreCategory);
+server.get('/popular', popularCategory);
 server.post('/AddNewMovie',addMovie);
 server.delete('/Movies/delete/:id',DeleteMovieHandler);
 server.get('/search', search)
@@ -141,6 +143,49 @@ async function search(req, res) {
 }
 
 
+function genreCategory(req, res) {
+  const url = `https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}`;
+  try {
+      axios.get(url)
+          .then(result => {
+              let mapResult = result.data.genres.map(item => {
+                  let singleresult = new Genre(item.id, item.name);
+                  return (singleresult);
+              })
+              res.send(mapResult);
+          })
+          .catch((error) => {
+              console.log('an error been occured ', error)
+              res.status(500).send(error);
+          })
+  }
+  catch (error) {
+      errorHandler(error, req, res)
+  }
+}
+
+function popularCategory(req, res) {
+  const url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}`;
+  try {
+      axios.get(url)
+          .then(result => {
+              let mapResult = result.data.results.map(item => {
+                  let singleresult = new Movie( item.title,  item.poster_path, item.overview);
+                  return (singleresult);
+              })
+              res.send(mapResult);
+          })
+          .catch((error) => {
+              console.log('an error been occured', error)
+              res.status(500).send(error);
+          })
+  }
+  catch (error) {
+      errorHandler(error, req, res)
+  }
+}
+
+
 //      let axiosResult = await axios.get(url);
 //     console.log(axiosResult.jsonData.movie)
 //     res.send(axiosResult.jsonData.movie)
@@ -152,7 +197,10 @@ async function search(req, res) {
 //     res.send(mapResult)
 
 
-
+function Genre(id, name) {
+  this.id = id;
+  this.name = name;
+}
 
 
 
